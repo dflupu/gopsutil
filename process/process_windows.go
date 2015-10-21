@@ -10,10 +10,10 @@ import (
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
-	"github.com/shirou/w32"
+	"github.com/VividCortex/w32"
 
-	"github.com/shirou/gopsutil/internal/common"
 	cpu "github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/internal/common"
 	net "github.com/shirou/gopsutil/net"
 )
 
@@ -221,9 +221,28 @@ func (p *Process) CPUTimes() (*cpu.CPUTimesStat, error) {
 func (p *Process) CPUAffinity() ([]int32, error) {
 	return nil, common.NotImplementedError
 }
+
 func (p *Process) MemoryInfo() (*MemoryInfoStat, error) {
-	return nil, common.NotImplementedError
+
+	accessRights := w32.PROCESS_QUERY_INFORMATION | w32.PROCESS_VM_READ
+	processHandle, success := w32.OpenProcess(uint32(accessRights), false, uint32(p.Pid))
+
+	if success != true {
+		return nil, errors.New("could not open process")
+	}
+
+	memInfo, success := w32.GetProcessMemoryInfo(processHandle)
+
+	if success != true {
+		return nil, errors.New("could not read process memory info")
+	}
+
+	return &MemoryInfoStat{
+		RSS: uint64(memInfo.WorkingSetSize),
+		VMS: uint64(memInfo.PagefileUsage),
+	}, nil
 }
+
 func (p *Process) MemoryInfoEx() (*MemoryInfoExStat, error) {
 	return nil, common.NotImplementedError
 }
@@ -276,28 +295,6 @@ func (p *Process) Kill() error {
 }
 
 func (p *Process) getFromSnapProcess(pid int32) (int32, int32, string, error) {
-	snap := w32.CreateToolhelp32Snapshot(w32.TH32CS_SNAPPROCESS, uint32(pid))
-	if snap == 0 {
-		return 0, 0, "", syscall.GetLastError()
-	}
-	defer w32.CloseHandle(snap)
-	var pe32 w32.PROCESSENTRY32
-	pe32.DwSize = uint32(unsafe.Sizeof(pe32))
-	if w32.Process32First(snap, &pe32) == false {
-		return 0, 0, "", syscall.GetLastError()
-	}
-
-	if pe32.Th32ProcessID == uint32(pid) {
-		szexe := syscall.UTF16ToString(pe32.SzExeFile[:])
-		return int32(pe32.Th32ParentProcessID), int32(pe32.CntThreads), szexe, nil
-	}
-
-	for w32.Process32Next(snap, &pe32) {
-		if pe32.Th32ProcessID == uint32(pid) {
-			szexe := syscall.UTF16ToString(pe32.SzExeFile[:])
-			return int32(pe32.Th32ParentProcessID), int32(pe32.CntThreads), szexe, nil
-		}
-	}
 	return 0, 0, "", errors.New("Couldn't find pid:" + string(pid))
 }
 
