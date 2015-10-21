@@ -10,10 +10,10 @@ import (
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
-	"github.com/shirou/w32"
+	"github.com/VividCortex/w32"
 
-	"github.com/shirou/gopsutil/internal/common"
 	cpu "github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/internal/common"
 	net "github.com/shirou/gopsutil/net"
 )
 
@@ -221,9 +221,28 @@ func (p *Process) CPUTimes() (*cpu.CPUTimesStat, error) {
 func (p *Process) CPUAffinity() ([]int32, error) {
 	return nil, common.NotImplementedError
 }
+
 func (p *Process) MemoryInfo() (*MemoryInfoStat, error) {
-	return nil, common.NotImplementedError
+
+	accessRights := w32.PROCESS_QUERY_INFORMATION | w32.PROCESS_VM_READ
+	processHandle, success := w32.OpenProcess(accessRights, false, p.Pid)
+
+	if success != true {
+		return 0, errors.New("could not open process")
+	}
+
+	memInfo, success := w32.GetProcessMemoryInfo(processHandle)
+
+	if success != true {
+		return 0, errors.New("could not read process memory info")
+	}
+
+	return &MemoryInfoStat{
+		RSS: memInfo.WorkingSetSize,
+		VMS: memInfo.PagefileUsage,
+	}
 }
+
 func (p *Process) MemoryInfoEx() (*MemoryInfoExStat, error) {
 	return nil, common.NotImplementedError
 }
