@@ -1,11 +1,11 @@
 gopsutil: psutil for golang
 ==============================
 
-.. image:: https://drone.io/github.com/shirou/gopsutil/status.png
-        :target: https://drone.io/github.com/shirou/gopsutil
+.. image:: https://drone.io/github.com/dflupu/gopsutil/status.png
+        :target: https://drone.io/github.com/dflupu/gopsutil
 
-.. image:: https://coveralls.io/repos/shirou/gopsutil/badge.png?branch=master
-        :target: https://coveralls.io/r/shirou/gopsutil?branch=master
+.. image:: https://coveralls.io/repos/dflupu/gopsutil/badge.png?branch=master
+        :target: https://coveralls.io/r/dflupu/gopsutil?branch=master
 
 
 This is a port of psutil (http://pythonhosted.org/psutil/). The challenge is porting all
@@ -13,7 +13,7 @@ psutil functions on some architectures...
 
 .. highlights:: Package Structure Changed!
 
-   Package (a.k.a. directory) structure has been changed!! see `issue 24 <https://github.com/shirou/gopsutil/issues/24>`_
+   Package (a.k.a. directory) structure has been changed!! see `issue 24 <https://github.com/dflupu/gopsutil/issues/24>`_
 
 .. highlights:: golang 1.4 will become REQUIRED!
 
@@ -39,7 +39,7 @@ Usage
    import (
    	"fmt"
 
-   	"github.com/shirou/gopsutil/mem"
+   	"github.com/dflupu/gopsutil/mem"
    )
 
    func main() {
@@ -65,7 +65,7 @@ You can set an alternative location to /sys by setting the HOST_SYS environment 
 Documentation
 ------------------------
 
-see http://godoc.org/github.com/shirou/gopsutil
+see http://godoc.org/github.com/dflupu/gopsutil
 
 
 More Info
