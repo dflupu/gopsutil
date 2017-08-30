@@ -231,6 +231,7 @@ func (p *Process) MemoryInfo() (*MemoryInfoStat, error) {
 		return nil, errors.New("could not open process")
 	}
 
+	defer w32.CloseHandle(processHandle)
 	memInfo, success := w32.GetProcessMemoryInfo(processHandle)
 
 	if success != true {
